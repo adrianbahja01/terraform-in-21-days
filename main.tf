@@ -66,7 +66,7 @@ tags = {
 }
 
 resource "aws_nat_gateway" "nat0" {
-  subnet_id = aws_subnet.private0.id
+  subnet_id = aws_subnet.public0.id
   allocation_id = aws_eip.eip0.id
 
   tags = {
@@ -75,7 +75,7 @@ resource "aws_nat_gateway" "nat0" {
 }
 
 resource "aws_nat_gateway" "nat1" {
-  subnet_id = aws_subnet.private1.id
+  subnet_id = aws_subnet.public1.id
   allocation_id = aws_eip.eip1.id
 
   tags = {
