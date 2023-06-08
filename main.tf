@@ -86,7 +86,7 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_route_table_association" "private" {
-  count          = length(var.private_cidr)
+  count          = length(var.public_cidr)
   route_table_id = aws_route_table.private[count.index].id
   subnet_id      = aws_subnet.private[count.index].id
 }
