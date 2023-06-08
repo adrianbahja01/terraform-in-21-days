@@ -35,8 +35,8 @@ resource "aws_internet_gateway" "internet" {
 }
 
 resource "aws_eip" "eip" {
-  count  = length(var.public_cidr)
-  vpc = true
+  count = length(var.public_cidr)
+  vpc   = true
 
   tags = {
     Name = "${var.project_name}_eip${count.index}"
