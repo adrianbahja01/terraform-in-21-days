@@ -1,85 +1,55 @@
 resource "aws_vpc" "vpc_adrian" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block = var.vpc_cidr
 
   tags = {
-    Name = "vpc_adrian"
+    Name = "${var.project_name}_vpc"
   }
 }
-resource "aws_subnet" "public0" {
-  cidr_block = "10.0.1.0/24"
-  vpc_id = aws_vpc.vpc_adrian.id
-  availability_zone = "us-east-1a"
+resource "aws_subnet" "public" {
+  count             = length(var.public_cidr)
+  cidr_block        = var.public_cidr[count.index]
+  vpc_id            = aws_vpc.vpc_adrian.id
+  availability_zone = var.availability_zone_names[count.index]
 
   tags = {
-    Name = "public0"
+    Name = "${var.project_name}_public${count.index}"
   }
 }
-resource "aws_subnet" "public1" {
-  cidr_block = "10.0.2.0/24"
-  vpc_id = aws_vpc.vpc_adrian.id
-  availability_zone = "us-east-1b"
+resource "aws_subnet" "private" {
+  count             = length(var.private_cidr)
+  cidr_block        = var.private_cidr[count.index]
+  vpc_id            = aws_vpc.vpc_adrian.id
+  availability_zone = var.availability_zone_names[count.index]
 
   tags = {
-    Name = "public1"
+    Name = "${var.project_name}_private${count.index}"
   }
 }
-resource "aws_subnet" "private0" {
-  cidr_block = "10.0.3.0/24"
-  vpc_id = aws_vpc.vpc_adrian.id
-  availability_zone = "us-east-1a"
 
-  tags = {
-    Name = "private0"
-  }
-}
-resource "aws_subnet" "private1" {
-  cidr_block = "10.0.4.0/24"
-  vpc_id = aws_vpc.vpc_adrian.id
-  availability_zone = "us-east-1b"
-
-  tags = {
-    Name = "private1"
-  }
-}
-resource "aws_internet_gateway" "internet0" {
+resource "aws_internet_gateway" "internet" {
   vpc_id = aws_vpc.vpc_adrian.id
 
   tags = {
-    Name = "internet0"
+    Name = "${var.project_name}_internet"
   }
 }
 
-resource "aws_eip" "eip0" {
-domain = "vpc"
-
-tags = {
-    Name = "eip0"
-  }
-}
-
-resource "aws_eip" "eip1" {
-domain = "vpc"
-
-tags = {
-    Name = "eip1"
-  }
-}
-
-resource "aws_nat_gateway" "nat0" {
-  subnet_id = aws_subnet.public0.id
-  allocation_id = aws_eip.eip0.id
+resource "aws_eip" "eip" {
+  count  = length(var.public_cidr)
+  vpc = true
 
   tags = {
-    Name = "nat0"
+    Name = "${var.project_name}_eip${count.index}"
   }
 }
 
-resource "aws_nat_gateway" "nat1" {
-  subnet_id = aws_subnet.public1.id
-  allocation_id = aws_eip.eip1.id
+resource "aws_nat_gateway" "nat" {
+  count         = length(var.public_cidr)
+  subnet_id     = aws_subnet.public[count.index].id
+  allocation_id = aws_eip.eip[count.index].id
 
   tags = {
-    Name = "nat1"
+    Name = "${var.project_name}_nat${count.index}"
   }
 }
 
@@ -88,54 +58,36 @@ resource "aws_route_table" "public" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.internet0.id
+    gateway_id = aws_internet_gateway.internet.id
   }
 
   tags = {
-    Name = "public"
+    Name = "${var.project_name}_public"
   }
 }
 
-resource "aws_route_table" "private0" {
+resource "aws_route_table" "private" {
+  count  = length(var.private_cidr)
   vpc_id = aws_vpc.vpc_adrian.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.nat0.id
+    gateway_id = aws_nat_gateway.nat[count.index].id
   }
   tags = {
-    Name = "private0"
+    Name = "${var.project_name}_private${count.index}"
   }
 }
 
-resource "aws_route_table" "private1" {
-  vpc_id = aws_vpc.vpc_adrian.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.nat1.id
-  }
-  tags = {
-    Name = "private1"
-  }
-}
-
-resource "aws_route_table_association" "public0" {
+resource "aws_route_table_association" "public" {
+  count          = length(var.public_cidr)
   route_table_id = aws_route_table.public.id
-  subnet_id = aws_subnet.public0.id
+  subnet_id      = aws_subnet.public[count.index].id
 }
 
-resource "aws_route_table_association" "public1" {
-  route_table_id = aws_route_table.public.id
-  subnet_id = aws_subnet.public1.id
+resource "aws_route_table_association" "private" {
+  count          = length(var.private_cidr)
+  route_table_id = aws_route_table.private[count.index].id
+  subnet_id      = aws_subnet.private[count.index].id
 }
 
-resource "aws_route_table_association" "private0" {
-  route_table_id = aws_route_table.private0.id
-  subnet_id = aws_subnet.private0.id
-}
-
-resource "aws_route_table_association" "private1" {
-  route_table_id = aws_route_table.private1.id
-  subnet_id = aws_subnet.private1.id
-}
