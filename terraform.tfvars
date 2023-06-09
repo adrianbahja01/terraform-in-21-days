@@ -5,3 +5,6 @@ vpc_cidr                = "10.0.0.0/16"
 availability_zone_names = ["us-east-1a", "us-east-1b"]
 region_name             = "us-east-1"
 project_name            = "tf_ab"
+ec2_type                = "t2.micro"
+ssh_key_name            = "adrian-dev-personal"
+sg_allowed_cidrs        = ["81.19.10.20/32"]
