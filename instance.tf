@@ -14,13 +14,21 @@ data "aws_ami" "ami_linux" {
 
 resource "aws_security_group" "public_sg" {
   name        = "${var.project_name}_public"
-  description = "This SG will allow SSH access only from my Public IP"
+  description = "This SG will allow SSH+HTTP access only from my Public IP"
   vpc_id      = aws_vpc.vpc_adrian.id
 
   ingress {
     description = "SSH from my Public IP"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.sg_allowed_cidrs
+  }
+
+  ingress {
+    description = "HTTP from my Public IP"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = var.sg_allowed_cidrs
   }
@@ -44,6 +52,7 @@ resource "aws_instance" "public" {
   associate_public_ip_address = true
   instance_type               = var.ec2_type
   key_name                    = var.ssh_key_name
+  user_data                   = file("httpd_install.sh")
 
   tags = {
     Name = "${var.project_name}_public"
