@@ -7,13 +7,6 @@ terraform {
   }
 
   required_version = ">= 1.4.0"
-  backend "s3" {
-    bucket = "tf-remote-state-ab/"
-    key = "terraform.tfstate"
-    region = "us-east-1"
-    dynamodb_table = "tf-dynamodb"
-    profile = "adrianpersonal"
-  }
 }
 
 provider "aws" {

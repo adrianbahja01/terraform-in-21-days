@@ -1,0 +1,5 @@
+profile_name    = "adrianpersonal"
+region_name     = "us-east-1"
+project_name    = "tf_ab"
+tfbucket_name   = "tf-remote-state-ab"
+tfdynamodb_name = "tf-dynamodb-lock"
