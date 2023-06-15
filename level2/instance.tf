@@ -15,7 +15,7 @@ data "aws_ami" "ami_linux" {
 resource "aws_security_group" "public_sg" {
   name        = "${var.project_name}_public"
   description = "This SG will allow SSH+HTTP access only from my Public IP"
-  vpc_id      = aws_vpc.vpc_adrian.id
+  vpc_id      = data.terraform_remote_state.tf_remote_state.outputs.vpc_id
 
   ingress {
     description = "SSH from my Public IP"
@@ -48,7 +48,7 @@ resource "aws_security_group" "public_sg" {
 resource "aws_instance" "public" {
   ami                         = data.aws_ami.ami_linux.id
   vpc_security_group_ids      = [aws_security_group.public_sg.id]
-  subnet_id                   = aws_subnet.public[0].id
+  subnet_id                   = data.terraform_remote_state.tf_remote_state.outputs.public_subnet_id[0]
   associate_public_ip_address = true
   instance_type               = var.ec2_type
   key_name                    = var.ssh_key_name
@@ -62,7 +62,7 @@ resource "aws_instance" "public" {
 resource "aws_security_group" "private_sg" {
   name        = "${var.project_name}_private"
   description = "This SG will allow SSH access only from my VPC"
-  vpc_id      = aws_vpc.vpc_adrian.id
+  vpc_id      = data.terraform_remote_state.tf_remote_state.outputs.vpc_id
 
   ingress {
     description = "SSH from VPC"
@@ -87,7 +87,7 @@ resource "aws_security_group" "private_sg" {
 resource "aws_instance" "private" {
   ami                    = data.aws_ami.ami_linux.id
   vpc_security_group_ids = [aws_security_group.private_sg.id]
-  subnet_id              = aws_subnet.private[0].id
+  subnet_id              = data.terraform_remote_state.tf_remote_state.outputs.private_subnet_id[0]
   instance_type          = var.ec2_type
   key_name               = var.ssh_key_name
 
