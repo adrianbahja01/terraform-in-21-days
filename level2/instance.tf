@@ -14,21 +14,13 @@ data "aws_ami" "ami_linux" {
 
 resource "aws_security_group" "public_sg" {
   name        = "${var.project_name}_public"
-  description = "This SG will allow SSH+HTTP access only from my Public IP"
+  description = "This SG will allow SSH access only from my Public IP"
   vpc_id      = data.terraform_remote_state.tf_remote_state.outputs.vpc_id
 
   ingress {
     description = "SSH from my Public IP"
     from_port   = 22
     to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = var.sg_allowed_cidrs
-  }
-
-  ingress {
-    description = "HTTP from my Public IP"
-    from_port   = 80
-    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = var.sg_allowed_cidrs
   }
@@ -45,6 +37,7 @@ resource "aws_security_group" "public_sg" {
   }
 
 }
+
 resource "aws_instance" "public" {
   ami                         = data.aws_ami.ami_linux.id
   vpc_security_group_ids      = [aws_security_group.public_sg.id]
@@ -52,7 +45,6 @@ resource "aws_instance" "public" {
   associate_public_ip_address = true
   instance_type               = var.ec2_type
   key_name                    = var.ssh_key_name
-  user_data                   = file("httpd_install.sh")
 
   tags = {
     Name = "${var.project_name}_public"
@@ -61,7 +53,7 @@ resource "aws_instance" "public" {
 
 resource "aws_security_group" "private_sg" {
   name        = "${var.project_name}_private"
-  description = "This SG will allow SSH access only from my VPC"
+  description = "This SG will allow SSH from my VPC and HTTP access from LB"
   vpc_id      = data.terraform_remote_state.tf_remote_state.outputs.vpc_id
 
   ingress {
@@ -70,6 +62,14 @@ resource "aws_security_group" "private_sg" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description     = "HTTP from Load Balancer"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lb-sg.id]
   }
 
   egress {
@@ -85,17 +85,16 @@ resource "aws_security_group" "private_sg" {
 
 }
 resource "aws_instance" "private" {
+  count                  = length(data.terraform_remote_state.tf_remote_state.outputs.private_subnet_id)
   ami                    = data.aws_ami.ami_linux.id
   vpc_security_group_ids = [aws_security_group.private_sg.id]
-  subnet_id              = data.terraform_remote_state.tf_remote_state.outputs.private_subnet_id[0]
+  subnet_id              = data.terraform_remote_state.tf_remote_state.outputs.private_subnet_id[count.index]
   instance_type          = var.ec2_type
   key_name               = var.ssh_key_name
+  user_data              = file("httpd_install.sh")
+
 
   tags = {
-    Name = "${var.project_name}_private"
+    Name = "${var.project_name}_private${count.index}"
   }
-}
-
-output "ec2_IP" {
-  value = aws_instance.public.public_ip
 }
