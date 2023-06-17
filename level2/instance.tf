@@ -84,17 +84,3 @@ resource "aws_security_group" "private_sg" {
   }
 
 }
-resource "aws_instance" "private" {
-  count                  = length(data.terraform_remote_state.tf_remote_state.outputs.private_subnet_id)
-  ami                    = data.aws_ami.ami_linux.id
-  vpc_security_group_ids = [aws_security_group.private_sg.id]
-  subnet_id              = data.terraform_remote_state.tf_remote_state.outputs.private_subnet_id[count.index]
-  instance_type          = var.ec2_type
-  key_name               = var.ssh_key_name
-  user_data              = file("httpd_install.sh")
-
-
-  tags = {
-    Name = "${var.project_name}_private${count.index}"
-  }
-}

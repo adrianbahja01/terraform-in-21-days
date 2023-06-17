@@ -52,13 +52,6 @@ resource "aws_lb_target_group" "lb-target-main" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "lb-target-attach" {
-  count            = length(aws_instance.private)
-  target_group_arn = aws_lb_target_group.lb-target-main.arn
-  port             = 80
-  target_id        = aws_instance.private[count.index].id
-}
-
 resource "aws_lb_listener" "lb-listener" {
   load_balancer_arn = aws_lb.lb-main.arn
   port              = 80
