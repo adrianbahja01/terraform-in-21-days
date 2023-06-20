@@ -17,14 +17,6 @@ resource "aws_security_group" "public_sg" {
   description = "This SG will allow SSH access only from my Public IP"
   vpc_id      = data.terraform_remote_state.tf_remote_state.outputs.vpc_id
 
-  ingress {
-    description = "SSH from my Public IP"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = var.sg_allowed_cidrs
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -38,31 +30,10 @@ resource "aws_security_group" "public_sg" {
 
 }
 
-resource "aws_instance" "public" {
-  ami                         = data.aws_ami.ami_linux.id
-  vpc_security_group_ids      = [aws_security_group.public_sg.id]
-  subnet_id                   = data.terraform_remote_state.tf_remote_state.outputs.public_subnet_id[0]
-  associate_public_ip_address = true
-  instance_type               = var.ec2_type
-  key_name                    = var.ssh_key_name
-
-  tags = {
-    Name = "${var.project_name}_public"
-  }
-}
-
 resource "aws_security_group" "private_sg" {
   name        = "${var.project_name}_private"
   description = "This SG will allow SSH from my VPC and HTTP access from LB"
   vpc_id      = data.terraform_remote_state.tf_remote_state.outputs.vpc_id
-
-  ingress {
-    description = "SSH from VPC"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
-  }
 
   ingress {
     description     = "HTTP from Load Balancer"

@@ -1,10 +1,10 @@
 resource "aws_launch_configuration" "config-main" {
-  name_prefix     = "${var.project_name}-"
-  instance_type   = var.ec2_type
-  image_id        = data.aws_ami.ami_linux.id
-  key_name        = var.ssh_key_name
-  user_data       = file("httpd_install.sh")
-  security_groups = [aws_security_group.private_sg.id]
+  name_prefix          = "${var.project_name}-"
+  instance_type        = var.ec2_type
+  image_id             = data.aws_ami.ami_linux.id
+  user_data            = file("httpd_install.sh")
+  security_groups      = [aws_security_group.private_sg.id]
+  iam_instance_profile = aws_iam_instance_profile.iam-profile.name
 }
 
 resource "aws_autoscaling_group" "autoscale-main" {
