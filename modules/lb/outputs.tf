@@ -3,9 +3,9 @@ output "lb_dns" {
 }
 
 output "target_group_arn" {
-    value = aws_lb_target_group.lb-target-main.arn
+  value = aws_lb_target_group.lb-target-main.arn
 }
 
 output "lbsg_id" {
-    value = aws_security_group.lb-sg.id
+  value = aws_security_group.lb-sg.id
 }
