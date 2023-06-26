@@ -1,8 +1,8 @@
 resource "aws_acm_certificate" "lb-acm" {
-    domain_name = aws_route53_record.www.name
-    validation_method = "DNS"
+  domain_name       = aws_route53_record.www.name
+  validation_method = "DNS"
 
-    tags = {
+  tags = {
     name = "${var.project_name}-lb-acm"
   }
 }
@@ -25,6 +25,6 @@ resource "aws_route53_record" "domain-valid" {
 }
 
 resource "aws_acm_certificate_validation" "cert-valid" {
-      certificate_arn = aws_acm_certificate.lb-acm.arn
-      validation_record_fqdns = [ for record in aws_route53_record.domain-valid : record.fqdn ]
+  certificate_arn         = aws_acm_certificate.lb-acm.arn
+  validation_record_fqdns = [for record in aws_route53_record.domain-valid : record.fqdn]
 }

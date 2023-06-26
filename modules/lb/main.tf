@@ -64,7 +64,7 @@ resource "aws_lb_listener" "https-listener" {
   load_balancer_arn = aws_lb.lb-main.arn
   port              = 443
   protocol          = "HTTPS"
-  certificate_arn = aws_acm_certificate.lb-acm.arn
+  certificate_arn   = aws_acm_certificate.lb-acm.arn
 
   default_action {
     type             = "forward"
@@ -73,12 +73,12 @@ resource "aws_lb_listener" "https-listener" {
 }
 
 resource "aws_lb_listener" "http-listener" {
-    depends_on = [ aws_lb_listener.https-listener ]
-    load_balancer_arn = aws_lb.lb-main.arn
-    port = 80
-    protocol = "HTTP"
+  depends_on        = [aws_lb_listener.https-listener]
+  load_balancer_arn = aws_lb.lb-main.arn
+  port              = 80
+  protocol          = "HTTP"
 
-    default_action {
+  default_action {
     type = "redirect"
 
     redirect {

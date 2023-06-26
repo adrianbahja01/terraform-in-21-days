@@ -22,3 +22,11 @@ data "aws_ami" "ami_linux" {
     values = ["hvm"]
   }
 }
+
+data "aws_secretsmanager_secret" "db_secret" {
+  name = "db_secret"
+}
+
+data "aws_secretsmanager_secret_version" "db_secret_version" {
+  secret_id = data.aws_secretsmanager_secret.db_secret.id
+}
