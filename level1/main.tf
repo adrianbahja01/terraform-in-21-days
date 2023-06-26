@@ -1,9 +1,24 @@
-module "vpc" {
-  source = "../modules/vpc"
+data "aws_availability_zones" "available_azs" {
+  state = "available"
+}
 
-  vpc_cidr                = var.vpc_cidr
-  project_name            = var.project_name
-  availability_zone_names = var.availability_zone_names
-  public_cidr             = var.public_cidr
-  private_cidr            = var.private_cidr
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+
+  cidr            = var.vpc_cidr
+  name            = var.project_name
+  azs             = data.aws_availability_zones.available_azs.names
+  public_subnets  = var.public_cidr
+  private_subnets = var.private_cidr
+  create_vpc      = true
+
+  # One NAT Gateway per subnet (default behavior)
+  enable_nat_gateway     = true
+  single_nat_gateway     = false
+  one_nat_gateway_per_az = false
+
+
+  tags = {
+    Name = "${var.project_name}_vpc"
+  }
 }
