@@ -20,6 +20,13 @@ module "lb_security_gr" {
   vpc_id = data.terraform_remote_state.tf_remote_state.outputs.vpc_id
   ingress_with_cidr_blocks = [
     {
+      description = "HTTP access"
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+    {
       description = "HTTPS access"
       from_port   = 443
       to_port     = 443
