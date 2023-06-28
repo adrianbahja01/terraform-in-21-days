@@ -53,5 +53,6 @@ module "rds" {
   create_db_subnet_group      = true
   family                      = "mysql5.7"
   major_engine_version        = "5.7"
-
+  skip_final_snapshot         = true
 }
+
